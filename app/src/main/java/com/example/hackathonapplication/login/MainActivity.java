@@ -1,9 +1,8 @@
 package com.example.hackathonapplication.login;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,19 +19,26 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.hackathonapplication.Home.HomeActivity;
 import com.example.hackathonapplication.R;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnFocusChangeListener, ViewTreeObserver.OnGlobalLayoutListener, TextWatcher {
 
-    private String TAG = "ifu25";
 
     private ImageButton mIbNavigationBack;
-    private LinearLayout mLlLoginPull;
     private View mLlLoginLayer;
-    private LinearLayout mLlLoginOptions;
     private EditText mEtLoginUsername;
     private EditText mEtLoginPwd;
     private LinearLayout mLlLoginUsername;
@@ -44,9 +50,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private LinearLayout mLayBackBar;
     private TextView mTvLoginForgetPwd;
     private Button mBtLoginRegister;
-
-    //全局Toast
-    private Toast mToast;
+    private String url="http://101.132.105.56:8080/login";
+    private OkHttpClient client;
 
     private int mLogoHeight;
     private int mLogoWidth;
@@ -55,17 +60,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_login);
-
         initView();
+
     }
 
     //初始化视图
     private void initView() {
         //登录层、下拉层、其它登录方式层
         mLlLoginLayer = findViewById(R.id.ll_login_layer);
-        mLlLoginPull = findViewById(R.id.ll_login_pull);
-        mLlLoginOptions = findViewById(R.id.ll_login_options);
-
         //导航栏+返回按钮
         mLayBackBar = findViewById(R.id.ly_retrieve_bar);
         mIbNavigationBack = findViewById(R.id.ib_navigation_back);
@@ -92,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mTvLoginForgetPwd.setOnClickListener(this);
 
         //注册点击事件
-        mLlLoginPull.setOnClickListener(this);
         mIbNavigationBack.setOnClickListener(this);
         mEtLoginUsername.setOnClickListener(this);
         mIvLoginUsernameDel.setOnClickListener(this);
@@ -100,9 +101,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtLoginRegister.setOnClickListener(this);
         mEtLoginPwd.setOnClickListener(this);
         mIvLoginPwdDel.setOnClickListener(this);
-        findViewById(R.id.ib_login_weibo).setOnClickListener(this);
-        findViewById(R.id.ib_login_qq).setOnClickListener(this);
-        findViewById(R.id.ib_login_wx).setOnClickListener(this);
 
         //注册其它事件
         mLayBackBar.getViewTreeObserver().addOnGlobalLayoutListener(this);
@@ -140,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.bt_login_submit:
                 //登录
                 loginRequest();
-                startActivity(new Intent(MainActivity.this, HomeActivity.class));
+
                 break;
             case R.id.bt_login_register:
                 //注册
@@ -151,31 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(MainActivity.this, ForgetPwdActivity.class));
                 break;
             case R.id.ll_login_layer:
-            case R.id.ll_login_pull:
-                mLlLoginPull.animate().cancel();
-                mLlLoginLayer.animate().cancel();
 
-                int height = mLlLoginOptions.getHeight();
-                float progress = (mLlLoginLayer.getTag() != null && mLlLoginLayer.getTag() instanceof Float) ? (float) mLlLoginLayer.getTag() : 1;
-                int time = (int) (360 * progress);
-
-                if (mLlLoginPull.getTag() != null) {
-                    mLlLoginPull.setTag(null);
-                    glide(height, progress, time);
-                } else {
-                    mLlLoginPull.setTag(true);
-                    upGlide(height, progress, time);
-                }
-                break;
-            case R.id.ib_login_weibo:
-                weiboLogin();
-                break;
-            case R.id.ib_login_qq:
-                qqLogin();
-                break;
-            case R.id.ib_login_wx:
-                weixinLogin();
-                break;
             default:
                 break;
         }
@@ -197,84 +171,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mLlLoginUsername.setActivated(false);
             }
         }
-    }
-
-    /**
-     * menu glide
-     *
-     * @param height   height
-     * @param progress progress
-     * @param time     time
-     */
-    private void glide(int height, float progress, int time) {
-        mLlLoginPull.animate()
-                .translationYBy(height - height * progress)
-                .translationY(height)
-                .setDuration(time)
-                .start();
-
-        mLlLoginLayer.animate()
-                .alphaBy(1 * progress)
-                .alpha(0)
-                .setDuration(time)
-                .setListener(new AnimatorListenerAdapter() {
-
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-                        if (animation instanceof ValueAnimator) {
-                            mLlLoginLayer.setTag(((ValueAnimator) animation).getAnimatedValue());
-                        }
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        if (animation instanceof ValueAnimator) {
-                            mLlLoginLayer.setTag(((ValueAnimator) animation).getAnimatedValue());
-                        }
-                        mLlLoginLayer.setVisibility(View.GONE);
-                    }
-                })
-                .start();
-    }
-
-    /**
-     * menu up glide
-     *
-     * @param height   height
-     * @param progress progress
-     * @param time     time
-     */
-    private void upGlide(int height, float progress, int time) {
-        mLlLoginPull.animate()
-                .translationYBy(height * progress)
-                .translationY(0)
-                .setDuration(time)
-                .start();
-        mLlLoginLayer.animate()
-                .alphaBy(1 - progress)
-                .alpha(1)
-                .setDuration(time)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {
-                        mLlLoginLayer.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-                        if (animation instanceof ValueAnimator) {
-                            mLlLoginLayer.setTag(((ValueAnimator) animation).getAnimatedValue());
-                        }
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        if (animation instanceof ValueAnimator) {
-                            mLlLoginLayer.setTag(((ValueAnimator) animation).getAnimatedValue());
-                        }
-                    }
-                })
-                .start();
     }
 
     //显示或隐藏logo
@@ -385,35 +281,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //登录
     private void loginRequest() {
 
-    }
+        new Thread(new Runnable(){
 
-    //微博登录
-    private void weiboLogin() {
+            @Override
+            public void run() {
+                try {
+                    client=new OkHttpClient();
+                    String usn=mEtLoginUsername.getText().toString();
+                    String psd=mEtLoginPwd.getText().toString();
+                    RequestBody requestBody=new FormBody.Builder()
+                            .add("username",usn)
+                            .add("password",psd)
+                            .build();
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .post(requestBody)
+                            .build();
+                    Response response=client.newCall(request).execute();
+                    if(response.isSuccessful()){
+                        String responseData=response.body().string();
+                        parseJSONWithJSONObject(responseData);
+                        //System.out.println(responseData);
+                        startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                        if(responseData.equals("success")){
 
-    }
+                            startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
-    //QQ登录
-    private void qqLogin() {
+            private void parseJSONWithJSONObject(String jsonData) {
+                try {
+                    JSONObject jsonObject=new JSONObject(jsonData);
+                    String content =jsonObject.getString("content");
+                    JSONObject newjsonObiect =new JSONObject(content);
+                    String id =newjsonObiect.getString("id");
+                    String usn=newjsonObiect.getString("username");
+                    String psd=newjsonObiect.getString("password");
+                    SharedPreferences.Editor editor=getSharedPreferences("data",MODE_PRIVATE).edit();
+                    editor.putString("id",id);
+                    editor.putString("username",usn);
+                    editor.putString("password",psd);
+                    editor.apply();
+                } catch (JSONException e) {
+                    e.printStackTrace();
 
-    }
+                }
 
-    //微信登录
-    private void weixinLogin() {
+            }
+        }).start();
 
-    }
-
-    /**
-     * 显示Toast
-     *
-     * @param msg 提示信息内容
-     */
-    private void showToast(int msg) {
-        if (null != mToast) {
-            mToast.setText(msg);
-        } else {
-            mToast = Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT);
-        }
-
-        mToast.show();
     }
 }

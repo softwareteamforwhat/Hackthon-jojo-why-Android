@@ -1,5 +1,6 @@
 package com.example.hackathonapplication.Home;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -24,6 +25,10 @@ public class HomeActivity extends AppCompatActivity {
     private ViewPagerAdapter viewPagerAdapter;
     private ViewPager viewPager;
     private MenuItem menuItem;
+    private String id;
+    private Fragment MsgFragment;
+    private Fragment UserFragment;
+    private Fragment MissionFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +36,8 @@ public class HomeActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
         setContentView(R.layout.activity_mission);
+        SharedPreferences sharedPreferences=getSharedPreferences("data",MODE_PRIVATE);
+        id=sharedPreferences.getString("id","");
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         viewPager = findViewById(R.id.vp);
@@ -58,10 +65,13 @@ public class HomeActivity extends AppCompatActivity {
         });
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(viewPagerAdapter);
+        MsgFragment=new MsgFragment();
+        MissionFragment=new MissionFragment();
+        UserFragment=new UserFragment();
         List<Fragment> list = new ArrayList<>();
-        list.add(MissionFragment.Instance("Mission"));
-        list.add(MsgFragment.Instance("Message"));
-        list.add(UserFragment.Instance("User"));
+        list.add(MissionFragment);
+        list.add(MsgFragment);
+        list.add(UserFragment);
         viewPagerAdapter.setList(list);
 
     }
@@ -85,4 +95,8 @@ public class HomeActivity extends AppCompatActivity {
             return false;
         }
     };
+
+    public String getId(){
+        return this.id;
+    }
 }

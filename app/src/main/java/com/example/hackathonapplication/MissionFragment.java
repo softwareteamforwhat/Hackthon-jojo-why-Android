@@ -8,14 +8,6 @@ import android.view.ViewGroup;
 
 public class MissionFragment extends Fragment {
 
-    public static MissionFragment Instance(String name) {
-        Bundle args = new Bundle();
-        args.putString("name", name);
-        MissionFragment fragment = new MissionFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState){
         View view=inflater.inflate(R.layout.mission_fragment, container,false);
