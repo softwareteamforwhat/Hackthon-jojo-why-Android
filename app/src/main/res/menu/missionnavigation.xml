@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_mission"
+        android:icon="@drawable/iv1_p"
+        android:title="任务" />
+    <item
+        android:id="@+id/navigation_msg"
+        android:icon="@drawable/iv4_p"
+        android:title="消息" />
+    <item
+        android:id="@+id/navigation_User"
+        android:icon="@drawable/iv3_p"
+        android:title="我" />
+</menu>

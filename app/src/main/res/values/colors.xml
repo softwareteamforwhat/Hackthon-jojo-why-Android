@@ -3,7 +3,6 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-
     <!-- 常用颜色值 -->
     <color name="white">#FFFFFF</color>
     <color name="transparent">#00000000</color>
@@ -18,14 +17,18 @@
 
     <!-- 新版登录模块-->
     <color name="login_line_color">#dededf</color>
-    <color name="login_input_active">#31b968</color>
+    <color name="login_input_active">#31B968</color>
     <color name="login_other_color">#cacaca</color>
     <color name="account_input_bg_color">#33ffffff</color>
-    <color name="account_lock_bg">#ff43815c</color>
+    <color name="account_lock_bg">#43815C</color>
     <color name="account_lock_font_color">#FF68997C</color>
     <color name="account_input_color">#c9c9c9</color>
     <color name="account_pressed_true">#14b94d</color>
 
-    <color name="bg_press">#ebebeb</color>\
+    <color name="bg_press">#EBEBEB</color>\
     <color name="bg_press_material">#d4d4d4</color>
+
+
+    <color name="tab_checked">#ED6A2C</color>
+    <color name="tab_unchecked">#757575</color>
 </resources>
